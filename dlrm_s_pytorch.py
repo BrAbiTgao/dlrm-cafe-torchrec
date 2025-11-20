@@ -1561,9 +1561,9 @@ def run():
         dlrm.load_state_dict(ld_model["state_dict"])
         ld_j = ld_model["iter"]
         ld_k = ld_model["epoch"]
-        ld_nepochs = ld_model["nepochs"]
-        ld_nbatches = ld_model["nbatches"]
-        ld_nbatches_test = ld_model["nbatches_test"]
+        ld_nepochs = ld_model.get("nepochs", args.nepochs)
+        ld_nbatches = ld_model.get("nbatches", 0)
+        ld_nbatches_test = ld_model.get("nbatches_test", 0)
         ld_train_loss = ld_model["train_loss"]
         ld_total_loss = ld_model["total_loss"]
         if args.mlperf_logging:
@@ -1946,6 +1946,25 @@ def run():
                 device,
                 use_gpu,
             )
+
+
+    # === [新增] 训练循环结束后，强制保存最终模型 ===
+    if not args.inference_only and args.save_model != "":
+        print("Training finished. Saving final model to {}".format(args.save_model))
+        # 构造要保存的字典，即使没有进行过测试(best_acc_test可能为0)也要保存
+        final_model_dict = {
+            "epoch": args.nepochs,
+            "iter": total_iter,
+            "train_loss": total_loss,
+            "total_loss": total_loss,
+            "opt_state_dict": optimizer.state_dict(),
+            "state_dict": dlrm.state_dict(),
+            "test_acc": best_acc_test, 
+        }
+        torch.save(final_model_dict, args.save_model+".final")
+        print("Final model saved successfully.")
+    # ===============================================
+
 
     # profiling
     if args.enable_profiling:

@@ -277,12 +277,20 @@ extern "C" {
             }
         }
         int* batch_query(uint32_t *data, int len) {
+            if (len > MAX_BUFFER) {
+                printf("ERROR: batch_query len (%d) > MAX_BUFFER (%d)\n", len, MAX_BUFFER);
+                exit(1);
+            }
             for (int i = 0; i < len; ++i) {
                 que[i] = query(data[i]);
             }
             return que;
         }
         int* batch_insert(uint32_t *data, int len) {
+            if (len > MAX_BUFFER) {
+                printf("ERROR: batch_insert_val len (%d) > MAX_BUFFER (%d)\n", len, MAX_BUFFER);
+                exit(1);
+            }
             ++batch_num;
             decay_importance *= alpha;
             if (decay_importance > V) {
@@ -298,6 +306,10 @@ extern "C" {
             return ins;
         }
         int* batch_insert_val(uint32_t *data, float *v, int len) {
+            if (len > MAX_BUFFER) {
+                printf("ERROR: batch_insert_val len (%d) > MAX_BUFFER (%d)\n", len, MAX_BUFFER);
+                exit(1);
+            }
             ++batch_num;
             // cout << "real: " << real_n << " " << lim << " " << decay_importance << " " << alpha << endl;
             decay_importance *= alpha;
